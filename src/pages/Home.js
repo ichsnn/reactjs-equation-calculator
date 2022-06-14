@@ -47,8 +47,15 @@ function MatriksSizeInput(props) {
         props.onColChange(col);
     };
 
+    const handleReset = (e) => {
+        setRow(props.defaultRow);
+        setCol(props.defaultCol);
+        props.onRowChange(props.defaultRow);
+        props.onColChange(props.defaultCol);
+    };
+
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onReset={handleReset}>
             <SizeInput
                 onValueChange={handleRowChange}
                 defaultValue={props.defaultRow}
@@ -72,7 +79,7 @@ function SizeInput(props) {
         <div>
             <label htmlFor={props.name}>{props.label}</label>
             <input
-                className='input-matriksSize'
+                className="input-matriksSize"
                 type="number"
                 id={props.name}
                 name={props.name}
@@ -106,5 +113,5 @@ function MatriksRow(props) {
 }
 
 function MatriksCol(props) {
-    return <input type="number" name={props.name} required defaultValue={0} />;
+    return <input type="number" name={props.name} id={props.name} title={props.name} required defaultValue={0} max="3" />;
 }

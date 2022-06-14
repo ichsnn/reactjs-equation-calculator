@@ -16,15 +16,19 @@ const Home = () => {
     };
 
     return (
-        <div>
-            <h1>Gauss Calculator</h1>
-            <MatriksSizeInput
-                onColChange={handleColChange}
-                onRowChange={handleRowChange}
-                defaultRow={defaultRow}
-                defaultCol={defaultCol}
-            />
-            <MatriksInput row={row} col={col} />
+        <div className='container'>
+            <h1 className=''>Gauss Calculator</h1>
+            <div>
+                <MatriksSizeInput
+                    onColChange={handleColChange}
+                    onRowChange={handleRowChange}
+                    defaultRow={defaultRow}
+                    defaultCol={defaultCol}
+                />
+            </div>
+            <div>
+                <MatriksInput row={row} col={col} />
+            </div>
         </div>
     );
 };
@@ -94,7 +98,7 @@ function SizeInput(props) {
     );
 }
 
-function MatriksInput(props) {
+function RenderBoxInput(props) {
     const MatriksBoxRender = [];
     for (let i = 0; i < props.row; i++) {
         const MatriksColumn = [];
@@ -108,10 +112,33 @@ function MatriksInput(props) {
     return <div>{MatriksBoxRender}</div>;
 }
 
+function MatriksInput(props) {
+    return (
+        <form>
+            <div>
+                <RenderBoxInput row={props.row} col={props.col} />
+            </div>
+            <div>
+                <input type="submit" value="Submit" />
+            </div>
+        </form>
+    );
+}
+
 function MatriksRow(props) {
     return <div className="matriks-row">{props.children}</div>;
 }
 
 function MatriksCol(props) {
-    return <input type="number" name={props.name} id={props.name} title={props.name} required defaultValue={0} max="3" />;
+    return (
+        <input
+            type="number"
+            name={props.name}
+            id={props.name}
+            title={props.name}
+            required
+            defaultValue={0}
+            max="3"
+        />
+    );
 }

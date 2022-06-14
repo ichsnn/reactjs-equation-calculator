@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect } from "react";
 import { useState } from "react";
 
 const Home = () => {
@@ -37,43 +38,46 @@ export default Home;
 function MatriksSizeInput(props) {
   const [row, setRow] = useState(props.defaultRow);
   const [col, setCol] = useState(props.defaultCol);
-  const handleRowChange = (e) => {
-    setRow(e.target.value);
+
+  const handleRowIncrease = (e) => {
+    if (row < 6) {
+      setRow(row + 1);
+    }
   };
 
-  const handleColChange = (e) => {
-    setCol(e.target.value);
+  const handleRowDecrease = (e) => {
+    if (row > 2) {
+      setRow(row - 1);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    props.onRowChange(row);
+  const handleColIncrease = (e) => {
+    if (col < 6) setCol(col + 1);
+  };
+
+  const handleColDecrease = (e) => {
+    if (col > 2) setCol(col - 1);
+  };
+
+  useEffect(() => {
     props.onColChange(col);
-  };
-
-  const handleReset = (e) => {
-    setRow(props.defaultRow);
-    setCol(props.defaultCol);
-    props.onRowChange(props.defaultRow);
-    props.onColChange(props.defaultCol);
-  };
+    props.onRowChange(row);
+  });
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      onReset={handleReset}
-      className="flex flex-col gap-2"
-    >
+    <form className="flex flex-col gap-2">
       <div className="flex gap-6">
         <SizeInput
-          onValueChange={handleRowChange}
-          defaultValue={props.defaultRow}
+          onValueIncrease={handleRowIncrease}
+          onValueDecrease={handleRowDecrease}
+          value={row}
           name="row"
           label="Row"
         />
         <SizeInput
-          onValueChange={handleColChange}
-          defaultValue={props.defaultCol}
+          onValueIncrease={handleColIncrease}
+          onValueDecrease={handleColDecrease}
+          value={col}
           name="col"
           label="Col"
         />
@@ -83,14 +87,6 @@ function MatriksSizeInput(props) {
 }
 
 function SizeInput(props) {
-  const handleDecrease = (e) => {
-    console.log(props.row)
-  };
-
-  const handleIncrease = (e) => {
-    console.log(props.row)
-  };
-
   return (
     <div className="flex items-center gap-2">
       <label htmlFor={props.name} className="font-semibold">
@@ -100,7 +96,7 @@ function SizeInput(props) {
         <div className="flex flex-col">
           <button
             type="button"
-            onClick={handleDecrease}
+            onClick={props.onValueDecrease}
             className="border font-semibold aspect-square border-slate-300 inline-flex items-center justify-center w-6"
           >
             -
@@ -114,16 +110,15 @@ function SizeInput(props) {
           name={props.name}
           min={2}
           max={6}
-          defaultValue={props.defaultValue}
+          value={props.value}
           contentEditable
-          onChange={props.onValueChange}
           disabled
           required
         />
         <div className="flex flex-col">
           <button
             type="button"
-            onClick={handleIncrease}
+            onClick={props.onValueIncrease}
             className="border font-semibold aspect-square border-slate-300 inline-flex items-center justify-center w-6"
           >
             +

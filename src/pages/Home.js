@@ -1,12 +1,15 @@
 import React from "react";
+import { useRef } from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import { countGauss, countGaussJordan } from "../utils/GaussFunction";
 
 const Home = () => {
   const defaultRow = 3;
   const defaultCol = 4;
   const [row, setRow] = useState(defaultRow);
   const [col, setCol] = useState(defaultCol);
+  const [matriks, setMatriks] = useState([]);
 
   const handleRowChange = (rowValue) => {
     setRow(rowValue);
@@ -16,9 +19,21 @@ const Home = () => {
     setCol(colValue);
   };
 
+  const handleMatriksSubmit = (matriksValue) => {
+    setMatriks(matriksValue);
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-md">
-      <h1 className="text-3xl font-bold mb-6">Gauss Calculator</h1>
+      <div className="mb-6">
+        <h1 className="text-4xl font-bold text-center mb-4">
+          Gauss Calculator
+        </h1>
+        <p>
+          This calculator will help you to solve a system of linear equations
+          using Gauss-Jordan elimination.
+        </p>
+      </div>
       <div className="mb-4">
         <MatriksSizeInput
           onColChange={handleColChange}
@@ -28,7 +43,11 @@ const Home = () => {
         />
       </div>
       <div>
-        <MatriksInput row={row} col={col} />
+        <MatriksInput
+          row={row}
+          col={col}
+          onMatriksSubmit={handleMatriksSubmit}
+        />
       </div>
     </div>
   );
@@ -65,39 +84,40 @@ function MatriksSizeInput(props) {
   });
 
   return (
-    <form className="flex flex-col gap-2">
-      <div className="flex gap-6">
-        <SizeInput
-          onValueIncrease={handleRowIncrease}
-          onValueDecrease={handleRowDecrease}
-          value={row}
-          name="row"
-          label="Row"
-        />
-        <SizeInput
-          onValueIncrease={handleColIncrease}
-          onValueDecrease={handleColDecrease}
-          value={col}
-          name="col"
-          label="Col"
-        />
-      </div>
-    </form>
+    <div className="flex gap-2 justify-between">
+      <h2 className="text-xl font-bold">Input Your Matriks : </h2>
+      <form className="flex flex-col gap-2 items-center">
+        <div className="flex gap-2">
+          <SizeInput
+            onValueIncrease={handleRowIncrease}
+            onValueDecrease={handleRowDecrease}
+            value={row}
+            name="row"
+            label="Row"
+          />
+          <div className="font-bold">×</div>
+          <SizeInput
+            onValueIncrease={handleColIncrease}
+            onValueDecrease={handleColDecrease}
+            value={col}
+            name="col"
+            label="Col"
+          />
+        </div>
+      </form>
+    </div>
   );
 }
 
 function SizeInput(props) {
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor={props.name} className="font-semibold">
-        {props.label} :{" "}
-      </label>
       <div className="flex">
         <div className="flex flex-col">
           <button
             type="button"
             onClick={props.onValueDecrease}
-            className="border font-semibold aspect-square border-slate-300 inline-flex items-center justify-center w-6"
+            className="border font-semibold aspect-square border-slate-300 inline-flex items-center justify-center w-6 text-slate-300 hover:text-slate-700"
           >
             -
           </button>
@@ -119,7 +139,7 @@ function SizeInput(props) {
           <button
             type="button"
             onClick={props.onValueIncrease}
-            className="border font-semibold aspect-square border-slate-300 inline-flex items-center justify-center w-6"
+            className="border font-semibold aspect-square border-slate-300 inline-flex items-center justify-center w-6 text-slate-300 hover:text-slate-700"
           >
             +
           </button>
@@ -131,10 +151,21 @@ function SizeInput(props) {
 
 function RenderBoxInput(props) {
   const MatriksBoxRender = [];
+  const handleChange = (e, row, col) => {
+    props.onValueChange(+e.target.value, row, col);
+  };
   for (let i = 0; i < props.row; i++) {
     const MatriksColumn = [];
     for (let j = 0; j < props.col; j++) {
-      MatriksColumn.push(<MatriksCol key={j} name={`matriks[${i}][${j}]`} />);
+      MatriksColumn.push(
+        <MatriksCol
+          key={j}
+          name={`matriks[${i}][${j}]`}
+          onChange={handleChange}
+          row={i}
+          col={j}
+        />
+      );
     }
     MatriksBoxRender.push(<MatriksRow key={i}>{MatriksColumn}</MatriksRow>);
   }
@@ -142,23 +173,72 @@ function RenderBoxInput(props) {
 }
 
 function MatriksInput(props) {
+  const [matriks, setMatriks] = useState(
+    Array.from({ length: props.row }, () =>
+      Array.from({ length: props.col }, () => 0)
+    )
+  );
+
+  const [copyMatriks, setCopyMatriks] = useState([]);
+
+  useEffect(() => {
+    const array = Array.from({ length: props.row }, () =>
+      Array.from({ length: props.col }, () => 0)
+    );
+    console.log(copyMatriks.length > props.row);
+    console.log(`N : ${copyMatriks.length}`);
+    console.log(`Row : ${props.row}`);
+    if (copyMatriks.length > 0 && copyMatriks) {
+      if (copyMatriks.length > props.row + 1) {
+        for (let i = 0; i < copyMatriks.length; i++) {
+          for (let j = 0; j < copyMatriks[i].length; j++) {
+            array[i][j] = copyMatriks[i][j];
+          }
+        }
+      } else {
+        for (let i = 0; i < props.row; i++) {
+          for (let j = 0; j < props.col; j++) {
+            array[i][j] = !copyMatriks[i][j] ? 0 : copyMatriks[i][j];
+          }
+        }
+      }
+    }
+    setMatriks(array);
+  }, [props.row, props.col, copyMatriks]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(props);
+    console.log(matriks);
+    props.onMatriksSubmit(matriks);
+  };
+
+  const handleMatriksChange = (matriksValue, row, col) => {
+    let copy = [...matriks];
+    copy[row][col] = matriksValue;
+    setCopyMatriks(copy);
+  };
+
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Input Your Matriks : </h2>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="mb-2">
-          <RenderBoxInput row={props.row} col={props.col} />
+          <RenderBoxInput
+            row={props.row}
+            col={props.col}
+            onValueChange={handleMatriksChange}
+          />
         </div>
         <div className="flex flex-col gap-2 justify-end">
           <button
             type="submit"
-            className="bg-sky-600 text-white font-semibold px-4 py-1 rounded-md w-full"
+            className="bg-sky-600 hover:bg-sky-700 active:ring-4 text-white font-semibold px-4 py-1 rounded-md w-full"
           >
             Solve
           </button>
           <button
             type="reset"
-            className="bg-red-600 text-white font-semibold px-4 py-1 rounded-md w-full"
+            className="bg-red-600 hover:bg-red-700 active:ring-4 text-white font-semibold px-4 py-1 rounded-md w-full"
           >
             Reset
           </button>
@@ -173,15 +253,19 @@ function MatriksRow(props) {
 }
 
 function MatriksCol(props) {
+  const handleChange = (e) => {
+    props.onChange(e, props.row, props.col);
+  };
   return (
     <input
-      className="flex-1 flex pl-2 border border-slate-300 w-full focus:outline-sky-600"
+      className="flex-1 flex pl-2 border border-slate-300 w-full focus:outline-sky-600 text-center"
       type="number"
       name={props.name}
       id={props.name}
       title={props.name}
       required
       defaultValue={0}
+      onChange={handleChange}
     />
   );
 }

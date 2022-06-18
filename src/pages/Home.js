@@ -1,15 +1,20 @@
 import React from "react";
-import { useRef } from "react";
 import { useEffect } from "react";
 import { useState } from "react";
-import { countGauss, countGaussJordan } from "../utils/GaussFunction";
+import Solution from "../components/Solution";
 
 const Home = () => {
   const defaultRow = 3;
   const defaultCol = 4;
   const [row, setRow] = useState(defaultRow);
   const [col, setCol] = useState(defaultCol);
-  const [matriks, setMatriks] = useState([]);
+  const [matriks, setMatriks] = useState(
+    Array.from({ length: row }, () => Array.from({ length: col }, () => 0))
+  );
+  const [tempMatriks, setTempMatriks] = useState(
+    Array.from({ length: row }, () => Array.from({ length: col }, () => 0))
+  );
+  const [showSolution, setShowSolution] = useState(false);
 
   const handleRowChange = (rowValue) => {
     setRow(rowValue);
@@ -19,9 +24,27 @@ const Home = () => {
     setCol(colValue);
   };
 
-  const handleMatriksSubmit = (matriksValue) => {
-    setMatriks(matriksValue);
+  const handleMatriksSubmit = () => {
+    setMatriks(matriks);
+    setShowSolution(true);
   };
+
+  const handleMatriksChange = (matriksValue, row, col) => {
+    const copy = [...matriks];
+    copy[row][col] = matriksValue;
+    setTempMatriks(copy);
+  };
+
+  useEffect(() => {
+    setMatriks(tempMatriks);
+  }, [matriks, tempMatriks]);
+
+  useEffect(() => {
+    const array = Array.from({ length: row }, () =>
+      Array.from({ length: col }, () => 0)
+    );
+    setMatriks(array);
+  }, [row, col]);
 
   return (
     <div className="container mx-auto p-4 max-w-md">
@@ -47,8 +70,10 @@ const Home = () => {
           row={row}
           col={col}
           onMatriksSubmit={handleMatriksSubmit}
+          onMatriksChange={handleMatriksChange}
         />
       </div>
+      <div>{showSolution ? <Solution matriks={matriks} /> : null}</div>
     </div>
   );
 };
@@ -151,9 +176,6 @@ function SizeInput(props) {
 
 function RenderBoxInput(props) {
   const MatriksBoxRender = [];
-  const handleChange = (e, row, col) => {
-    props.onValueChange(+e.target.value, row, col);
-  };
   for (let i = 0; i < props.row; i++) {
     const MatriksColumn = [];
     for (let j = 0; j < props.col; j++) {
@@ -161,7 +183,7 @@ function RenderBoxInput(props) {
         <MatriksCol
           key={j}
           name={`matriks[${i}][${j}]`}
-          onChange={handleChange}
+          onValueChange={props.onValueChange}
           row={i}
           col={j}
         />
@@ -173,50 +195,13 @@ function RenderBoxInput(props) {
 }
 
 function MatriksInput(props) {
-  const [matriks, setMatriks] = useState(
-    Array.from({ length: props.row }, () =>
-      Array.from({ length: props.col }, () => 0)
-    )
-  );
-
-  const [copyMatriks, setCopyMatriks] = useState([]);
-
-  useEffect(() => {
-    const array = Array.from({ length: props.row }, () =>
-      Array.from({ length: props.col }, () => 0)
-    );
-    console.log(copyMatriks.length > props.row);
-    console.log(`N : ${copyMatriks.length}`);
-    console.log(`Row : ${props.row}`);
-    if (copyMatriks.length > 0 && copyMatriks) {
-      if (copyMatriks.length > props.row + 1) {
-        for (let i = 0; i < copyMatriks.length; i++) {
-          for (let j = 0; j < copyMatriks[i].length; j++) {
-            array[i][j] = copyMatriks[i][j];
-          }
-        }
-      } else {
-        for (let i = 0; i < props.row; i++) {
-          for (let j = 0; j < props.col; j++) {
-            array[i][j] = !copyMatriks[i][j] ? 0 : copyMatriks[i][j];
-          }
-        }
-      }
-    }
-    setMatriks(array);
-  }, [props.row, props.col, copyMatriks]);
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(props);
-    console.log(matriks);
-    props.onMatriksSubmit(matriks);
+    props.onMatriksSubmit();
   };
 
   const handleMatriksChange = (matriksValue, row, col) => {
-    let copy = [...matriks];
-    copy[row][col] = matriksValue;
-    setCopyMatriks(copy);
+    props.onMatriksChange(matriksValue, row, col);
   };
 
   return (
@@ -254,7 +239,8 @@ function MatriksRow(props) {
 
 function MatriksCol(props) {
   const handleChange = (e) => {
-    props.onChange(e, props.row, props.col);
+    console.log(props);
+    props.onValueChange(+e.target.value, props.row, props.col);
   };
   return (
     <input
